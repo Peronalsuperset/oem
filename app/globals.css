@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Invoice Designer Styles */
+@layer components {
+  .invoice-component {
+    min-width: 44px;
+    min-height: 44px;
+    position: relative;
+    cursor: move;
+    transition: all 0.2s ease;
+  }
+
+  .invoice-component:hover {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  }
+
+  .invoice-component.selected {
+    box-shadow: 0 0 0 2px #3b82f6;
+  }
+
+  .invoice-component.dragging {
+    opacity: 0.8;
+    transform: rotate(5deg);
+  }
+
+  .resize-handle {
+    width: 8px;
+    height: 8px;
+    background: #3b82f6;
+    border: 1px solid white;
+    position: absolute;
+    z-index: 10;
+  }
+
+  .resize-handle.nw {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+  }
+
+  .resize-handle.ne {
+    top: -4px;
+    right: -4px;
+    cursor: ne-resize;
+  }
+
+  .resize-handle.sw {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+  }
+
+  .resize-handle.se {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+  }
+
+  .resize-handle.n {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: n-resize;
+  }
+
+  .resize-handle.s {
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: s-resize;
+  }
+
+  .resize-handle.w {
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: w-resize;
+  }
+
+  .resize-handle.e {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: e-resize;
+  }
+
+  /* Table editing styles */
+  .editable-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .editable-table th,
+  .editable-table td {
+    border: 1px solid #e5e7eb;
+    padding: 8px;
+    position: relative;
+  }
+
+  .editable-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+  }
+
+  .editable-table .cell-input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 4px;
+    font-size: inherit;
+    font-family: inherit;
+  }
+
+  .editable-table .cell-input:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+  }
+
+  .editable-table .drag-handle {
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 16px;
+    background: #6b7280;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .editable-table tr:hover .drag-handle {
+    opacity: 1;
+  }
+
+  .editable-table .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  /* Data mapping styles */
+  .data-mapping-container {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .field-mapping {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+
+  .field-mapping.mapped {
+    background-color: #f0f9ff;
+    border-color: #3b82f6;
+  }
+
+  .field-mapping.error {
+    background-color: #fef2f2;
+    border-color: #ef4444;
+  }
+
+  .mapping-arrow {
+    color: #6b7280;
+    font-size: 18px;
+  }
+
+  /* Loading states */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .invoice-component {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    .resize-handle {
+      width: 12px;
+      height: 12px;
+    }
+
+    .editable-table th,
+    .editable-table td {
+      padding: 12px;
+    }
+  }
+
+  /* Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .invoice-component,
+    .resize-handle,
+    .skeleton {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  @media (prefers-contrast: high) {
+    .invoice-component:hover {
+      box-shadow: 0 0 0 3px #000;
+    }
+
+    .invoice-component.selected {
+      box-shadow: 0 0 0 3px #000;
+    }
+
+    .resize-handle {
+      background: #000;
+      border: 2px solid #fff;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .resize-handle,
+    .drag-handle,
+    .invoice-component:hover,
+    .invoice-component.selected {
+      display: none !important;
+      box-shadow: none !important;
+    }
+
+    .invoice-component {
+      cursor: default !important;
+    }
+
+    .editable-table .cell-input {
+      border: none;
+      background: transparent;
+    }
+  }
+
+  /* Custom scrollbars */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  /* Error states */
+  .error-state {
+    color: #ef4444;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .success-state {
+    color: #10b981;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .warning-state {
+    color: #f59e0b;
+    background-color: #fffbeb;
+    border: 1px solid #fed7aa;
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  /* Focus styles for accessibility */
+  .focus-visible:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Grid background */
+  .grid-background {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Ruler styles */
+  .ruler {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    font-size: 10px;
+    color: #6c757d;
+  }
+
+  .ruler-tick {
+    position: absolute;
+    background: #6c757d;
+  }
+
+  .ruler-tick.major {
+    background: #495057;
+  }
+
+  .ruler-label {
+    position: absolute;
+    font-size: 9px;
+    color: #495057;
+  }
+}
