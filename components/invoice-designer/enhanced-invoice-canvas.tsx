@@ -37,6 +37,7 @@ export function EnhancedInvoiceCanvas({
   onCanvasSettingsChange,
 }: CanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
   const [snapToGrid, setSnapToGrid] = useState(canvasSettings.snapToGrid)
   const { toast } = useToast()
@@ -88,8 +89,8 @@ export function EnhancedInvoiceCanvas({
   // Mouse tracking for ruler guides
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (canvasRef.current) {
-        const rect = canvasRef.current.getBoundingClientRect()
+      if (dropRef.current) {
+        const rect = dropRef.current.getBoundingClientRect()
         setMousePosition({
           x: (e.clientX - rect.left) / zoom,
           y: (e.clientY - rect.top) / zoom,
@@ -105,7 +106,7 @@ export function EnhancedInvoiceCanvas({
       accept: "component",
       drop: (item: any, monitor) => {
         const offset = monitor.getClientOffset()
-        const canvasRect = canvasRef.current?.getBoundingClientRect()
+        const canvasRect = dropRef.current?.getBoundingClientRect()
 
         if (offset && canvasRect) {
           const x = snapToGridFn((offset.x - canvasRect.left) / zoom)
@@ -167,6 +168,9 @@ export function EnhancedInvoiceCanvas({
     }),
     [components, zoom, snapToGridFn, checkCollision, onComponentsChange, canvasSettings, toast],
   )
+
+  // Connect the drop ref
+  drop(dropRef)
 
   // Handle accessible drop events
   useEffect(() => {
@@ -478,6 +482,7 @@ export function EnhancedInvoiceCanvas({
             }}
           >
             <div
+              ref={dropRef}
               className={`relative bg-white shadow-lg mx-auto transition-transform duration-200 ${
                 isOver && canDrop ? "ring-2 ring-blue-400 ring-opacity-50" : ""
               }`}
@@ -495,10 +500,6 @@ export function EnhancedInvoiceCanvas({
               onMouseLeave={() => setShowRulerGuides(false)}
               role="application"
               aria-label="Invoice design canvas. Use arrow keys to move selected component, Delete to remove."
-              ref={(node) => {
-                canvasRef.current = node
-                drop(node)
-              }}
             >
               {gridPattern}
 

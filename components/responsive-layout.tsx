@@ -3,64 +3,57 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-type DeviceType = "mobile" | "tablet" | "desktop"
-type ViewMode = "auto" | "mobile" | "tablet" | "desktop"
-
 interface ResponsiveContextType {
-  deviceType: DeviceType
-  viewMode: ViewMode
-  setViewMode: (mode: ViewMode) => void
   isMobile: boolean
   isTablet: boolean
   isDesktop: boolean
-  screenWidth: number
-  screenHeight: number
+  viewMode: "mobile" | "tablet" | "desktop"
+  setViewMode: (mode: "mobile" | "tablet" | "desktop") => void
 }
 
 const ResponsiveContext = createContext<ResponsiveContextType | undefined>(undefined)
 
 export function ResponsiveProvider({ children }: { children: ReactNode }) {
-  const [deviceType, setDeviceType] = useState<DeviceType>("desktop")
-  const [viewMode, setViewMode] = useState<ViewMode>("auto")
-  const [screenWidth, setScreenWidth] = useState(0)
-  const [screenHeight, setScreenHeight] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(true)
+  const [viewMode, setViewMode] = useState<"mobile" | "tablet" | "desktop">("desktop")
 
   useEffect(() => {
-    const updateDeviceType = () => {
+    const checkDevice = () => {
       const width = window.innerWidth
-      const height = window.innerHeight
+      const mobile = width < 768
+      const tablet = width >= 768 && width < 1024
+      const desktop = width >= 1024
 
-      setScreenWidth(width)
-      setScreenHeight(height)
+      setIsMobile(mobile)
+      setIsTablet(tablet)
+      setIsDesktop(desktop)
 
-      if (width < 768) {
-        setDeviceType("mobile")
-      } else if (width < 1024) {
-        setDeviceType("tablet")
-      } else {
-        setDeviceType("desktop")
-      }
+      // Auto-set view mode based on screen size
+      if (mobile) setViewMode("mobile")
+      else if (tablet) setViewMode("tablet")
+      else setViewMode("desktop")
     }
 
-    updateDeviceType()
-    window.addEventListener("resize", updateDeviceType)
-    return () => window.removeEventListener("resize", updateDeviceType)
+    checkDevice()
+    window.addEventListener("resize", checkDevice)
+    return () => window.removeEventListener("resize", checkDevice)
   }, [])
 
-  const currentDeviceType = viewMode === "auto" ? deviceType : (viewMode as DeviceType)
-
-  const value: ResponsiveContextType = {
-    deviceType: currentDeviceType,
-    viewMode,
-    setViewMode,
-    isMobile: currentDeviceType === "mobile",
-    isTablet: currentDeviceType === "tablet",
-    isDesktop: currentDeviceType === "desktop",
-    screenWidth,
-    screenHeight,
-  }
-
-  return <ResponsiveContext.Provider value={value}>{children}</ResponsiveContext.Provider>
+  return (
+    <ResponsiveContext.Provider
+      value={{
+        isMobile,
+        isTablet,
+        isDesktop,
+        viewMode,
+        setViewMode,
+      }}
+    >
+      {children}
+    </ResponsiveContext.Provider>
+  )
 }
 
 export function useResponsive() {
@@ -80,7 +73,7 @@ interface ResponsiveContainerProps {
 
 export function ResponsiveContainer({
   children,
-  maxWidth = "7xl",
+  maxWidth = "full",
   padding = true,
   className,
 }: ResponsiveContainerProps) {
@@ -122,11 +115,22 @@ export function ResponsiveGrid({
   gap = 4,
   className,
 }: ResponsiveGridProps) {
-  const { isMobile, isTablet } = useResponsive()
+  const { viewMode } = useResponsive()
 
-  const currentCols = isMobile ? cols.mobile : isTablet ? cols.tablet : cols.desktop
+  const getGridCols = () => {
+    switch (viewMode) {
+      case "mobile":
+        return `grid-cols-${cols.mobile || 1}`
+      case "tablet":
+        return `grid-cols-${cols.tablet || 2}`
+      case "desktop":
+        return `grid-cols-${cols.desktop || 3}`
+      default:
+        return "grid-cols-1"
+    }
+  }
 
-  return <div className={cn("grid", `grid-cols-${currentCols}`, `gap-${gap}`, className)}>{children}</div>
+  return <div className={cn("grid", getGridCols(), `gap-${gap}`, className)}>{children}</div>
 }
 
 interface ResponsiveStackProps {
@@ -146,20 +150,25 @@ export function ResponsiveStack({
   spacing = 4,
   className,
 }: ResponsiveStackProps) {
-  const { isMobile, isTablet } = useResponsive()
+  const { viewMode } = useResponsive()
 
-  const currentDirection = isMobile ? direction.mobile : isTablet ? direction.tablet : direction.desktop
+  const getFlexDirection = () => {
+    switch (viewMode) {
+      case "mobile":
+        return direction.mobile === "row" ? "flex-row" : "flex-col"
+      case "tablet":
+        return direction.tablet === "row" ? "flex-row" : "flex-col"
+      case "desktop":
+        return direction.desktop === "row" ? "flex-row" : "flex-col"
+      default:
+        return "flex-col"
+    }
+  }
 
-  return (
-    <div
-      className={cn(
-        "flex",
-        currentDirection === "row" ? "flex-row" : "flex-col",
-        currentDirection === "row" ? `space-x-${spacing}` : `space-y-${spacing}`,
-        className,
-      )}
-    >
-      {children}
-    </div>
-  )
+  const getSpacing = () => {
+    const flexDirection = getFlexDirection()
+    return flexDirection === "flex-row" ? `space-x-${spacing}` : `space-y-${spacing}`
+  }
+
+  return <div className={cn("flex", getFlexDirection(), getSpacing(), className)}>{children}</div>
 }
